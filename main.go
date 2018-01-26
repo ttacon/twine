@@ -92,6 +92,10 @@ func fdsForPIDs(pids []string) ([]FDInfo, error) {
 			PID:  currPID,
 			Type: strings.TrimPrefix(lines[i+1], "t"),
 			Name: strings.TrimPrefix(lines[i+2], "n"),
+
+			// NOTE: this is a very poor approximation, but it's good enough
+			// for now.
+			IsListening: !strings.Contains(lines[i+2], "->"),
 		})
 		i += 2
 	}
@@ -103,7 +107,8 @@ type FDInfo struct {
 	PID  string
 	Type string
 	// TODO(ttacon): Later on resolve known ports from /etc/services
-	Name string
+	Name        string
+	IsListening bool
 }
 
 func filterOutNonNetworkFDs(fds []FDInfo) []FDInfo {
@@ -117,10 +122,17 @@ func filterOutNonNetworkFDs(fds []FDInfo) []FDInfo {
 	return filtered
 }
 
+func listeningFragment(isListening bool) string {
+	if isListening {
+		return "LISTENING"
+	}
+	return "NOT_LISTENING"
+}
+
 func printFDs(fds []FDInfo) {
 	now := time.Now().Unix()
 	for _, fd := range fds {
-		fmt.Printf("%d %s %s %s\n",
-			now, fd.PID, fd.Type, fd.Name)
+		fmt.Printf("%d %s %s %s %s\n",
+			now, fd.PID, fd.Type, fd.Name, listeningFragment(fd.IsListening))
 	}
 }
