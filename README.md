@@ -19,8 +19,6 @@ Usage of twine:
 
 
 ## Roadmap
-
- - [ ] Add `LISTEN` status
  - [ ] Ability to specify collector to aggregate connection info
  - [ ] Ability to store historical info locally
  
